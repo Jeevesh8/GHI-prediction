@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 import argparse
 
-abs_loss_fn = nn.L1Loss().to(device)
+abs_loss_fn = nn.L1Loss() #.to(device)
 
 def mape_loss(pred,real) :
     return torch.sum(torch.div(abs_loss_fn(pred,real),torch.abs(real)))/b_sz
