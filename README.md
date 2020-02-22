@@ -27,14 +27,14 @@ python train.py --batch_size 256 --seq_len 256 --root_dir <directory-having-Data
                 --final_len 1 --steps 1 --param_file <file-path>
 ```
 
-final_len denotes <no-of-numbers-to-be-predicted-by-model>.
+final_len denotes number of consecutive GHI predictions to be made by model in one forward pass.
 steps denotes (number of rows to skip after seq_len rows before predicting final_len values -1)
 param_file is used to give path name of file where model-parameters are to be stored/retrieved from.
 Choose loss as 'mse' to train model to predict values of GHI. For predicting confidence intervals choose 'qr_loss' .
 And provide gammas as :- 
 
 ```
-  --gamma_list [interval_1_start, interval_2_start,...interval_n_start, interval_1_end, interval_2_end... interval_n_end]
+  --gamma_list interval_1_start interval_2_start...interval_n_start interval_1_end interval_2_end... interval_n_end          ....(A)
 ```
 
 Example :-
@@ -71,3 +71,5 @@ python Infer.py --mode predict_list --model <ar_net|trfrmr|cnn_lstm> --ini_len <
                 --final_len <same-as-in-train.py> --seq_len <same-as-in-train.py> --root_dir <directory-having-test-file>
                 --test_year <year-having-test-date> --times_to_run <no-of-times-to-run-the-model>
 ```
+
+The last two modes can also be run for confidence interval predictions. In that case, we need to provide corresponding param_file. And also add ```--interval True``` in the command. It will give outputs in the form same as (A) if model predicts multiple intervals simultaneously. 
