@@ -76,7 +76,7 @@ if __main__() :
     parser.add_argument('--mode', default='avg_loss', help='Choose from avg_loss, predict_list, predict_at_date')
     parser.add_argument('--loss', default='rmse', help='Choose from rmse, mbe, mae, mape')
     parser.add_argument('--model', default='ar_net', help='Choose from ar_net, trfrmr, cnn_lstm')
-    parser.add_argument('--param_len', type=int, help='Number of columns of input data')
+    parser.add_argument('--ini_len', type=int, help='Number of columns of input data')
     parser.add_argument('--param_file',help='Path to model\'s param file')
 
     parser.add_argument('--interval', type=bool, default=False, help='set true if model predicts interval')
