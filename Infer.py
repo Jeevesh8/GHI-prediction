@@ -1,52 +1,36 @@
 import torch.nn as nn
 import torch
+import argparse
 
 abs_loss_fn = nn.L1Loss().to(device)
 
 def mape_loss(pred,real) :
     return torch.sum(torch.div(abs_loss_fn(pred,real),torch.abs(real)))/b_sz
 
-def run_to_eval(t, lossfn, steps=1, give_lists=False, test_dataset=None) :
+def run_to_eval(t, lossfn, give_lists=False, test_dataset=None) :
     loss_list = []
     i = 0
     tot_loss = 0
+    
     test_data_loader = DataLoader(test_dataset, batch_size = 1 , num_workers=n_wrkrs, drop_last=True)
     it = iter(test_data_loader)
+    
     if give_lists :
         pred_lis = []
         actual_lis = []
         time_lis = []
+    
     for batch in it :
-        j = 0
-        
-        if give_list :
-            cur_lis = []
-            actual_lis_cur = []
-            cur_time_lis = []
         
         in_batch = batch['in'] #.to(device)
-        while j<steps :
-            out = t(in_batch)
-            if give_lists :
-                cur_time_lis.append(in_batch[0][-1][0:5].int().tolist())
-                actual_lis_cur.append(batch['out'].item())
-                cur_lis.append(out.item())
-            if j!=steps-1 :
-                try :
-                    batch = next(it)
-                except :
-                    print('Evaluation Loss:- ', tot_loss/i)
-                    return tot_loss/i
-                in_batch = batch['in']
-                in_batch[0][-1][-1] = out.item()
-            j+=1
-        
+        out = t(in_batch)
+            
         if give_lists :
-            pred_lis.append(cur_lis)
-            actual_lis.append(actual_lis_cur)
-            time_lis.append(cur_time_lis)
+            pred_lis.append(out.tolist())
+            actual_lis.append(batch['out'].tolist())
+            time_lis.append(in_batch[0][-1][0:5].int().tolist())
         
-        loss = lossfn(out.reshape(-1),batch['out']) #.to(device))
+        loss = lossfn(out.reshape(-1),batch['out'])
         tot_loss += loss.item()
         i+=1
         if i>200 and give_lists :
@@ -54,6 +38,7 @@ def run_to_eval(t, lossfn, steps=1, give_lists=False, test_dataset=None) :
             print(actual_lis)
             print(time_lis)
             break
+    
     print('Evaluation Loss:- ', tot_loss/i)
     return tot_loss/i
 
@@ -63,7 +48,7 @@ def mae_loss(x,y) :
 def diff(x,y) :
     return x-y
 
-def evaluate(t, loss = 'rmse', steps=24, test_dataset=None) :
+def evaluate(t, loss = 'rmse', test_dataset=None) :
     t.eval()
     if loss == 'rmse' :
         lossfn = nn.MSELoss()#.to(device)
@@ -75,20 +60,74 @@ def evaluate(t, loss = 'rmse', steps=24, test_dataset=None) :
         lossfn = diff
     else :
         lossfn = nn.MSELoss()
-    return run_to_eval(t, lossfn, steps, test_dataset)
+    return run_to_eval(t, lossfn, test_dataset=test_dataset)
 
 
-'''
-t = trnsfrmr_nt(ini_len=15).double().to(device)
-t.eval() 
-t.load_state_dict(torch.load('/content/drive/My Drive/SolarDataIndia/SolarData(In)/TransformerFast256OnlyWeather(In).param',map_location=cpu))
-loss_types = [0] #['mae','mbe','rmse']
-steps = [1,12]
-losses = []
-for loss in loss_types :
-    one_type_losses = []
-    for step in steps :
-        one_type_losses.append(evaluate(t, loss=loss, steps=step, ))
-    losses.append(one_type_losses)
-#print(losses)
-'''
+def predict_next(t, date_lis, test_dataset) :
+    batch = test_dataset.getitem_by_date(date_lis)
+    in_batch = batch['in']
+    out = t(in_batch)
+    if 'out' in batch and not args.interval:
+        print('Real output :-', batch[out].tolist())
+    print('Predicted Output :-', out)
+
+if __main__() :
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mode', default='avg_loss', help='Choose from avg_loss, predict_list, predict_at_date')
+    parser.add_argument('--loss', default='rmse', help='Choose from rmse, mbe, mae, mape')
+    parser.add_argument('--model', default='ar_net', help='Choose from ar_net, trfrmr, cnn_lstm')
+    parser.add_argument('--param_len', type=int, help='Number of columns of input data')
+    parser.add_argument('--param_file',help='Path to model\'s param file')
+
+    parser.add_argument('--interval', type=bool, default=False, help='set true if model predicts interval')
+    
+    parser.add_argument('--date_lis', nargs='*', help='List of form [Year, Month, Day, Hour, Minute]')
+    
+    parser.add_argument('--steps', type=int, default=1, help='Number of steps-ahead model was trained to predict')
+    parser.add_argument('--final_len', type=int, default=1)
+    parser.add_argument('--seq_len', type=int, default=256)
+
+    parser.add_argument('--root_dir',help='Directory where Data*.csv files are located.')
+    parser.add_argument('--test_start_year', type=int, help='Starting test year. Use only when mode is avg_loss')
+    parser.add_argument('--test_final_year', type=int, help='Final test year. Use only when mode is avg_loss.')
+    parser.add_argument('--test_year', type=int, default=-1, help='test data year.')
+    args = parser.parse_args()
+
+    from DataSet import Dataset 
+    if args.test_year != -1 :
+        csv_paths = [args.root_dir+'/Data'+str(args.test_year)]
+    else :
+        csv_paths = [args.root_dir+'/Data'+str(i) for i in range(args.test_start_year, args.test_final_year+1)]
+    
+    dataset_final_len = args.final_len if not args.interval or args.final_len<=1 else int(args.final_len/2) 
+    test_dataset = Dataset.SRData(csv_paths, seq_len = args.seq_len, steps = args.steps, final_len=dataset_final_len)
+
+    
+    if args.model=='ar_net' :
+        from Models import AR_Net
+        t = AR_Net.ar_nt(seq_len = args.seq_len, ini_len=args.ini_len, final_len=args.final_len).to(device)
+        if path.exists(args.param_file) :
+            t.load_state_dict(torch.load(args.param_file))
+    
+    elif args.model=='cnn_lstm' :
+        from Models import CNN_LSTM
+        t = CNN_LSTM.cnn_lstm(seq_len = args.seq_len, ini_len=args.ini_len, final_len=args.final_len).to(device)
+        if path.exists(args.param_file) :
+            t.load_state_dict(torch.load(args.param_file))
+    
+    elif args.model=='trfrmr' :
+        from Models import Transformer
+        t = Transformer.trnsfrmr_nt(seq_len = args.seq_len, ini_len=args.ini_len, final_len=args.final_len).to(device)
+        if path.exists(args.param_file) :
+            t.load_state_dict(torch.load(args.param_file))
+
+    if args.mode=='avg_loss' :
+        return evaluate(t,args.loss,test_dataset)
+    
+    elif args.mode=='predict_list' :
+        return run_to_eval(t, args.loss, True, test_dataset)
+    
+    elif args.mode == 'predict_next' :
+        for i in range(len(date_lis)) :
+            date_lis[i] = int(date_lis[i])
+        return predict_next(t,args.date_lis,test_dataset)

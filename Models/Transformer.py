@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 
 class trnsfrmr_nt(nn.Module) :
-    def __init__(self, seq_len=seq_len, ini_len=18) :
+    def __init__(self, seq_len=seq_len, ini_len=18, final_len=1) :
         super().__init__()
         self.d_model = 20
         self.seq_len = seq_len
@@ -13,7 +13,7 @@ class trnsfrmr_nt(nn.Module) :
         encoder_layer = nn.TransformerEncoderLayer(self.d_model,self.n_head,self.dim_feedforward)
         self.trnsfrmr =  nn.TransformerEncoder(encoder_layer,2)
         self.trnsfrmr2 =  nn.TransformerEncoder(encoder_layer,2)
-        self.final = nn.Sequential(nn.Linear(self.d_model*self.seq_len,512),nn.ReLU(), nn.Linear(512,1))
+        self.final = nn.Sequential(nn.Linear(self.d_model*self.seq_len,512),nn.ReLU(), nn.Linear(512,final_len))
     
     def forward(self,batch) :
         batch = self.init_trnsfrm(batch)
