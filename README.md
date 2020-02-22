@@ -40,6 +40,34 @@ And provide gammas as :-
 Example :-
 
 ```
-  --gamma_list [0.1,0.5,0.9,0.5]
+  --gamma_list 0.1 0.5 0.9 0.5
 ```
 
+You can also specify 1 element list if we want to train entire model to predict one value only.
+
+## Inference
+The script Infer.py can be run in three ways :-
+
+1.) To get average loss over a Dataset.
+
+Example :-
+```
+python Infer.py --mode avg_loss --loss <rmse|mae|mbe|mape> --model <ar_net|trfrmr|cnn_lstm> --ini_len <same-as-in-train.py> --param_file                   <same-as-train.py> --steps <same-as-in-train.py> --final_len <same-as-in-train.py> --seq_len <same-as-in-train.py>
+                --root_dir <dir-of-test-files> --test_start_year <int> --test_final_year <int>
+```
+2.) To get prediction at a particular time.
+
+Example :-
+
+```
+python Infer.py --mode predict_next --model <ar_net|trfrmr|cnn_lstm> --ini_len <same-as-in-train.py> --steps <same-as-in-train.py>
+                --final_len <same-as-in-train.py> --seq_len <same-as-in-train.py> --root_dir <dir-in-which-file-having-just-prev-values>
+                --test_year <year-having-test-date> --date_lis Year Month Day Hour Minute
+```
+3.) To get predicted values by running models n times.
+
+```
+python Infer.py --mode predict_list --model <ar_net|trfrmr|cnn_lstm> --ini_len <same-as-in-train.py> --steps <same-as-in-train.py>
+                --final_len <same-as-in-train.py> --seq_len <same-as-in-train.py> --root_dir <directory-having-test-file>
+                --test_year <year-having-test-date> --times_to_run <no-of-times-to-run-the-model>
+```
