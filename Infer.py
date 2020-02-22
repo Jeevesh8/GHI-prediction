@@ -7,7 +7,7 @@ abs_loss_fn = nn.L1Loss().to(device)
 def mape_loss(pred,real) :
     return torch.sum(torch.div(abs_loss_fn(pred,real),torch.abs(real)))/b_sz
 
-def run_to_eval(t, lossfn, give_lists=False, test_dataset=None) :
+def run_to_eval(t, lossfn, give_lists=False, test_dataset=None, times_to_run_model=0) :
     loss_list = []
     i = 0
     tot_loss = 0
@@ -33,7 +33,7 @@ def run_to_eval(t, lossfn, give_lists=False, test_dataset=None) :
         loss = lossfn(out.reshape(-1),batch['out'])
         tot_loss += loss.item()
         i+=1
-        if i>200 and give_lists :
+        if i>times_to_run_model and give_lists :
             print(pred_lis)
             print(actual_lis)
             print(time_lis)
@@ -91,8 +91,10 @@ if __main__() :
     parser.add_argument('--test_start_year', type=int, help='Starting test year. Use only when mode is avg_loss')
     parser.add_argument('--test_final_year', type=int, help='Final test year. Use only when mode is avg_loss.')
     parser.add_argument('--test_year', type=int, default=-1, help='test data year.')
+    
+    parser.add_argument('--times_to_run' , type=int, default=200, help='Times to run the model when mode is predict_list')
     args = parser.parse_args()
-
+    
     from DataSet import Dataset 
     if args.test_year != -1 :
         csv_paths = [args.root_dir+'/Data'+str(args.test_year)]
@@ -125,7 +127,7 @@ if __main__() :
         return evaluate(t,args.loss,test_dataset)
     
     elif args.mode=='predict_list' :
-        return run_to_eval(t, args.loss, True, test_dataset)
+        return run_to_eval(t, args.loss, True, test_dataset, args.times_to_run)
     
     elif args.mode == 'predict_next' :
         for i in range(len(date_lis)) :
