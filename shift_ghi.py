@@ -53,6 +53,7 @@ if __name__ == '__main__' :
     parser.add_argument('--ghi_time_file', help='path to file having lists of ghi and times')
     parser.add_argument('--date_lis', nargs='*', type=int)
     parser.add_argument('--ghi',nargs='*',type=float)
+    parser.add_argument('--write_to',help='Choose from <append|new_file_path>' )
     args = parser.parse_args()
     
     if args.ghi_time_file is not None :
@@ -65,8 +66,13 @@ if __name__ == '__main__' :
                 dic[k] = reform(dic[k])
                 dic[k] = shift_ghi(dic[k], times_lis)
                 print(dic[k])
-        with open(args.ghi_time_file, 'ab') as f :
-            pickle.dump(dic,f)
+        if args.write_to == 'append' :
+            with open(args.ghi_time_file, 'ab') as f :
+                pickle.dump(dic,f)
+        else :
+            with open(args.ghi_time_file, 'wb+') as f:
+                pickle.dump(dic,f)
+                
     else :
         dates = []
         while i+5<=len(args.date_lis) :
