@@ -52,7 +52,8 @@ The script Infer.py can be run in three ways :-
 
 Example :-
 ```
-python Infer.py --mode avg_loss --loss <rmse|mae|mbe|mape> --model <ar_net|trfrmr|cnn_lstm> --ini_len <same-as-in-train.py> --param_file                   <same-as-train.py> --steps <same-as-in-train.py> --final_len <same-as-in-train.py> --seq_len <same-as-in-train.py>
+python Infer.py --mode avg_loss --loss <rmse|mae|mbe|mape> --model <ar_net|trfrmr|cnn_lstm> --ini_len <same-as-in-train.py> --param_file
+                <same-as-train.py> --steps <same-as-in-train.py> --final_len <same-as-in-train.py> --seq_len <same-as-in-train.py>
                 --root_dir <dir-of-test-files> --test_start_year <int> --test_final_year <int>
 ```
 2.) To get prediction at a particular time.
