@@ -47,6 +47,7 @@ def calc_means(tar_dir, dat, start_year=2000, final_year=2014) :
         times.append([i,0])
         times.append([i,30])
         i+=1
+    
     for x in range(len(times)) :
         for i in range(366) :
             time_avgs[i][x] = morning_dat.loc[(morning_dat['nthDay']==i+1)&(morning_dat['Hour']==times[x][0])&(morning_dat['Minute']==times[x][1]),'day_residual'].mean()    
