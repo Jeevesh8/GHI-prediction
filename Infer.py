@@ -71,7 +71,7 @@ def predict_next(t, date_lis, test_dataset) :
         print('Real output :-', batch[out].tolist())
     print('Predicted Output :-', out)
 
-if __main__() :
+if __name__=='main':
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', default='avg_loss', help='Choose from avg_loss, predict_list, predict_at_date')
     parser.add_argument('--loss', default='rmse', help='Choose from rmse, mbe, mae, mape')
@@ -97,12 +97,12 @@ if __main__() :
     
     from DataSet import Dataset 
     if args.test_year != -1 :
-        csv_paths = [args.root_dir+'/Data'+str(args.test_year)]
+        csv_paths = [args.root_dir+'/Data'+str(args.test_year)+'.csv']
     else :
-        csv_paths = [args.root_dir+'/Data'+str(i) for i in range(args.test_start_year, args.test_final_year+1)]
+        csv_paths = [args.root_dir+'/Data'+str(i)+'.csv' for i in range(args.test_start_year, args.test_final_year+1)]
     
     dataset_final_len = args.final_len if not args.interval or args.final_len<=1 else int(args.final_len/2) 
-    test_dataset = Dataset.SRData(csv_paths, seq_len = args.seq_len, steps = args.steps, final_len=dataset_final_len)
+    test_dataset = Dataset.SRdata(csv_paths, seq_len = args.seq_len, steps = args.steps, final_len=dataset_final_len)
 
     
     if args.model=='ar_net' :
@@ -124,12 +124,12 @@ if __main__() :
             t.load_state_dict(torch.load(args.param_file))
 
     if args.mode=='avg_loss' :
-        return evaluate(t,args.loss,test_dataset)
+        print(evaluate(t,args.loss,test_dataset))
     
     elif args.mode=='predict_list' :
-        return run_to_eval(t, args.loss, True, test_dataset, args.times_to_run)
+        print(run_to_eval(t, args.loss, True, test_dataset, args.times_to_run))
     
     elif args.mode == 'predict_next' :
         for i in range(len(date_lis)) :
             date_lis[i] = int(date_lis[i])
-        return predict_next(t,args.date_lis,test_dataset)
+        print(predict_next(t,args.date_lis,test_dataset))

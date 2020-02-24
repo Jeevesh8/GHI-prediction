@@ -27,7 +27,7 @@ parser.add_argument('--model', default='ar_net', help='Choose From ar_net, trfrm
 parser.add_argument('--ini_len', type=int, default=18, help='Number of Columns in Data<i>.csv')
 parser.add_argument('--final_len', type=int, default=1, help='Number of numbers your model will predict.')
 parser.add_argument('--steps', type=int, default=1, help='How many step ahead do you want to predict?')
-parser.add_argument('--optimizer', default='Adam'. help='Choose from Adam and RAdam.')
+parser.add_argument('--optimizer', default='Adam', help='Choose from Adam and RAdam.')
 parser.add_argument('--param_file', help='Path to file to store weights.May not exist.')
 args = parser.parse_args()
 
@@ -36,19 +36,19 @@ n_wrkrs = mp.cpu_count()
 seq_len = args.seq_len
 epochs = args.epochs
  
-tr_csv_paths = [args.root_dir+'/Data'+str(i) for i in range(args.tr_start_year, args.tr_final_year+1)]
-val_csv_paths = [args.root_dir+'/Data'+str(i) for i in range(args.val_start_year, args.val_final_year+1)]
+tr_csv_paths = [args.root_dir+'/Data'+str(i)+'.csv' for i in range(args.tr_start_year, args.tr_final_year+1)]
+val_csv_paths = [args.root_dir+'/Data'+str(i)+'.csv' for i in range(args.val_start_year, args.val_final_year+1)]
 
-if len(args.gamma_list)>1 and len(args.gamma_list)%2!=0 and args.loss=='qr_loss':
+if args.gamma_list is not None and len(args.gamma_list)>1 and len(args.gamma_list)%2!=0 and args.loss=='qr_loss':
     print('Invalid gamma list')
-    return
+    exit(0)
 
-dataset_final_len = args.final_len if len(args.gamma_list)<=1 or args.loss!='qr_loss' else int(args.final_len/2) 
+dataset_final_len = args.final_len if args.loss!='qr_loss' or len(args.gamma_list)<=1 else int(args.final_len/2) 
 
-train_dataset = Dataset.SRData(tr_csv_paths, seq_len, steps=args.steps, final_len=dataset_final_len)
+train_dataset = Dataset.SRdata(tr_csv_paths, seq_len, steps=args.steps, final_len=dataset_final_len)
 train_data_loader = DataLoader(train_dataset, batch_size = b_sz, num_workers=n_wrkrs, drop_last = True)
 
-test_dataset = Dataset.SRData(val_csv_paths, seq_len, steps=args.steps, final_len=dataset_final_len)
+test_dataset = Dataset.SRdata(val_csv_paths, seq_len, steps=args.steps, final_len=dataset_final_len)
 test_data_loader = DataLoader(test_dataset, batch_size = b_sz, num_workers=n_wrkrs, drop_last=True)
 
 

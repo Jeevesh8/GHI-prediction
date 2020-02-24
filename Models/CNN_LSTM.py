@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 class cnn_lstm(nn.Module) :
-    def __init__(self,seq_len=seq_len, ini_len=18, final_len=1) :
+    def __init__(self,seq_len=256, ini_len=18, final_len=1) :
         super().__init__()
         self.d_model = 20 
         self.seq_len = seq_len

@@ -1,4 +1,6 @@
 from torch.utils.data import Dataset
+import pandas as pd
+import torch 
 
 class SRdata(Dataset) :
     def __init__(self, csv_paths, seq_len, transform = None, steps=1, final_len=1) :
@@ -22,7 +24,7 @@ class SRdata(Dataset) :
         start_index = idx+self.seq_len+self.steps-1
         end_index = start_index+self.final_len
         return { 'in' : torch.tensor(self.in_df[idx : idx+self.seq_len].values,dtype=torch.float64), 
-                'out' : torch.tensor(self.out_df.loc[start_index:end_index],dtype=torch.float64) }
+                'out' : torch.tensor(self.out_df.loc[start_index:end_index].values,dtype=torch.float64) }
 
     def __getonlyin__(self,idx) :
         return {'in' : torch.tensor(self.in_df[idx : idx+self.seq_len].values,dtype=torch.float64)}
