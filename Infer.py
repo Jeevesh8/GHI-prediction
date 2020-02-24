@@ -123,6 +123,8 @@ if __name__=='main':
         if path.exists(args.param_file) :
             t.load_state_dict(torch.load(args.param_file))
 
+    t = t.double()
+    
     if args.mode=='avg_loss' :
         print(evaluate(t,args.loss,test_dataset))
     

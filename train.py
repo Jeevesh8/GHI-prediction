@@ -94,6 +94,7 @@ if args.optimizer == 'RAdam' :
 elif args.optimizer == 'Adam' :
     optimizer = torch.optim.Adam(t.parameters(),lr=args.lr)
 
+t = t.double()
 train_rmse = []
 test_rmse = [10000]
 
