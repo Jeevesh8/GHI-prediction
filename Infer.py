@@ -1,17 +1,22 @@
 import torch.nn as nn
 import torch
 import argparse
+from torch.utils.data import DataLoader
+import multiprocessing as mp
 
+n_wrkrs = mp.cpu_count()
 abs_loss_fn = nn.L1Loss() #.to(device)
 
 def mape_loss(pred,real) :
     return torch.sum(torch.div(abs_loss_fn(pred,real),torch.abs(real)))/b_sz
 
+
+
 def run_to_eval(t, lossfn, give_lists=False, test_dataset=None, times_to_run_model=0) :
     loss_list = []
     i = 0
     tot_loss = 0
-    
+    t.eval()
     test_data_loader = DataLoader(test_dataset, batch_size = 1 , num_workers=n_wrkrs, drop_last=True)
     it = iter(test_data_loader)
     
@@ -30,7 +35,7 @@ def run_to_eval(t, lossfn, give_lists=False, test_dataset=None, times_to_run_mod
             actual_lis.append(batch['out'].tolist())
             time_lis.append(in_batch[0][-1][0:5].int().tolist())
         
-        loss = lossfn(out.reshape(-1),batch['out'])
+        loss = lossfn(out,batch['out'])
         tot_loss += loss.item()
         i+=1
         if i>times_to_run_model and give_lists :
@@ -40,6 +45,7 @@ def run_to_eval(t, lossfn, give_lists=False, test_dataset=None, times_to_run_mod
             break
     
     print('Evaluation Loss:- ', tot_loss/i)
+    t.train()
     return tot_loss/i
 
 def mae_loss(x,y) :

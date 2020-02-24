@@ -108,7 +108,7 @@ for i in range(epochs) :
         loss_list.append(loss)
         loss.backward()
         optimizer.step()
-    print('Avg. Training Loss in '+i+ 'th epoch :- ', sum(loss_list)/len(loss_list))
+    print('Avg. Training Loss in '+str(i)+ 'th epoch :- ', sum(loss_list)/len(loss_list))
     train_rmse.append(sum(loss_list)/len(loss_list))
     loss_list=[]
     t.cpu()
