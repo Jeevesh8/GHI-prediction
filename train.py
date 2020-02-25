@@ -43,7 +43,7 @@ if args.gamma_list is not None and len(args.gamma_list)>1 and len(args.gamma_lis
     print('Invalid gamma list')
     exit(0)
 
-dataset_final_len = args.final_len if args.loss!='qr_loss' or len(args.gamma_list)<=1 else int(args.final_len/2) 
+dataset_final_len = args.final_len if args.loss!='qr_loss' else 1    #or len(args.gamma_list)<=1 else int(args.final_len/2) 
 
 train_dataset = Dataset.SRdata(tr_csv_paths, seq_len, steps=args.steps, final_len=dataset_final_len)
 train_data_loader = DataLoader(train_dataset, batch_size = b_sz, num_workers=n_wrkrs, drop_last = True)
@@ -58,12 +58,10 @@ if args.loss=='mse' :
 elif args.loss=='qr_loss' :
     maximum  = nn.ReLU()
     gamma_list_len = len(args.gamma_list)
-    for i in range(gamma_list_len) :
-        args.gamma_list = float(args.gamma_list[i])
     gammas = torch.tensor(args.gamma_list, dtype=torch.float64, device=device)
     def qr_loss(tar, pred) :
         if gamma_list_len!=1 :
-            tar = torch.cat([tar,tar],dim=1)
+            tar = torch.cat([tar]*pred.shape[1],dim=1)
         n = tar.shape[0]
         loss = (1-gammas)*maximum(tar-pred)+(gammas)*maximum(pred-tar)
         return loss.sum()/n
@@ -104,7 +102,7 @@ for i in range(epochs) :
         optimizer.zero_grad()
         in_batch = batch['in'].to(device)
         out = t(in_batch)
-        loss = lossfn(out.reshape(b_sz),batch['out'].to(device))
+        loss = lossfn(batch['out'].to(device), out)
         loss_list.append(loss)
         loss.backward()
         optimizer.step()
