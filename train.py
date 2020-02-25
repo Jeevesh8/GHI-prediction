@@ -112,9 +112,7 @@ for i in range(epochs) :
     print('Avg. Training Loss in '+str(i)+ 'th epoch :- ', sum(loss_list)/len(loss_list))
     train_rmse.append(sum(loss_list)/len(loss_list))
     loss_list=[]
-    t.cpu()
-    test_rmse.append(Infer.evaluate(t, loss = args.loss, test_dataset=test_dataset, final_len=args.final_len, gamma_list = args.gamma_list))
-    t.to(device)
+    test_rmse.append(Infer.evaluate(t, loss = args.loss, test_dataset=test_dataset, final_len=args.final_len, gamma_list = args.gamma_list, batch_size=args.batch_size))
     if test_rmse[-1]==min(test_rmse) :
         print('saving:- ', test_rmse[-1])
         torch.save(t.state_dict(),args.param_file)

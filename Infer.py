@@ -6,6 +6,7 @@ import multiprocessing as mp
 
 n_wrkrs = mp.cpu_count()
 abs_loss_fn = nn.L1Loss() #.to(device)
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 def mape_loss(pred,real) :
     return torch.sum(torch.div(abs_loss_fn(pred,real),torch.abs(real)))/b_sz
@@ -18,12 +19,12 @@ def qr_loss(pred, tar) :
     loss = (1-gammas)*maximum(tar-pred)+(gammas)*maximum(pred-tar)
     return loss.sum()/(n*m)
     
-def run_to_eval(t, lossfn, give_lists=False, test_dataset=None, times_to_run_model=0) :
+def run_to_eval(t, lossfn, give_lists=False, test_dataset=None, times_to_run_model=0, batch_size=1) :
     loss_list = []
     i = 0
     tot_loss = 0
     t.eval()
-    test_data_loader = DataLoader(test_dataset, batch_size = 1 , num_workers=n_wrkrs, drop_last=True)
+    test_data_loader = DataLoader(test_dataset, batch_size = batch_size, num_workers=n_wrkrs, drop_last=True)
     it = iter(test_data_loader)
     
     if give_lists :
@@ -60,10 +61,10 @@ def mae_loss(x,y) :
 def diff(x,y) :
     return x-y
 
-def evaluate(t, loss = 'rmse', test_dataset=None, final_len=None,gamma_list=None) :
+def evaluate(t, loss = 'rmse', test_dataset=None, final_len=None, gamma_list=None, batch_size=1) :
     t.eval()
     if loss == 'rmse' :
-        lossfn = nn.MSELoss()#.to(device)
+        lossfn = nn.MSELoss()
     elif loss == 'mape' :
         lossfn = mape_loss
     elif loss == 'mae' :
@@ -74,7 +75,7 @@ def evaluate(t, loss = 'rmse', test_dataset=None, final_len=None,gamma_list=None
         global maximum, gamma_list_len, gammas
         maximum  = nn.ReLU()
         gamma_list_len = len(gamma_list)
-        gammas = torch.tensor(gamma_list, dtype=torch.float64)
+        gammas = torch.tensor(gamma_list, dtype=torch.float64, device=device)
         gammas = gammas.repeat_interleave(final_len)
         lossfn = qr_loss
     else :
@@ -97,6 +98,7 @@ if __name__=='main':
     parser.add_argument('--model', default='ar_net', help='Choose from ar_net, trfrmr, cnn_lstm')
     parser.add_argument('--ini_len', type=int, help='Number of columns of input data')
     parser.add_argument('--param_file',help='Path to model\'s param file')
+    parser.add_Argument('--batch_size', type=int, default=1, help='To be used in avg_loss mode only.')
 
     parser.add_argument('--interval', type=bool, default=False, help='set true if model predicts interval')
     
@@ -147,7 +149,7 @@ if __name__=='main':
     t = t.double()
     
     if args.mode=='avg_loss' :
-        print(evaluate(t,args.loss,test_dataset, args.final_len, args.gamma_list))
+        print(evaluate(t,args.loss,test_dataset, args.final_len, args.gamma_list, args.batch_size))
     
     elif args.mode=='predict_list' :
         print(run_to_eval(t, args.loss, True, test_dataset, args.times_to_run))
