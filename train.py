@@ -43,7 +43,8 @@ if args.gamma_list is not None and len(args.gamma_list)>1 and len(args.gamma_lis
     print('Invalid gamma list')
     exit(0)
 
-dataset_final_len = args.final_len if args.loss!='qr_loss' else 1    #or len(args.gamma_list)<=1 else int(args.final_len/2) 
+dataset_final_len = args.final_len  #if args.loss!='qr_loss' else 1    #or len(args.gamma_list)<=1 else int(args.final_len/2) 
+model_final_len = args.final_len*len(args.gamma_list) if args.gamma_list!=None else args.final_len
 
 train_dataset = Dataset.SRdata(tr_csv_paths, seq_len, steps=args.steps, final_len=dataset_final_len)
 train_data_loader = DataLoader(train_dataset, batch_size = b_sz, num_workers=n_wrkrs, drop_last = True)
@@ -59,30 +60,32 @@ elif args.loss=='qr_loss' :
     maximum  = nn.ReLU()
     gamma_list_len = len(args.gamma_list)
     gammas = torch.tensor(args.gamma_list, dtype=torch.float64, device=device)
+    gammas = gammas.repeat_interleave(args.final_len)
     def qr_loss(tar, pred) :
         if gamma_list_len!=1 :
-            tar = torch.cat([tar]*pred.shape[1],dim=1)
+            tar = torch.cat([tar]*gamma_list_len,dim=1)
         n = tar.shape[0]
+        m = tar.shape[1]
         loss = (1-gammas)*maximum(tar-pred)+(gammas)*maximum(pred-tar)
-        return loss.sum()/n
+        return loss.sum()/(n*m)
     lossfn = qr_loss
 
 
 if args.model=='ar_net' :
     from Models import AR_Net
-    t = AR_Net.ar_nt(seq_len = seq_len, ini_len=args.ini_len, final_len=args.final_len).to(device)
+    t = AR_Net.ar_nt(seq_len = seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
     if path.exists(args.param_file) :
         t.load_state_dict(torch.load(args.param_file))
 
 elif args.model=='cnn_lstm' :
     from Models import CNN_LSTM
-    t = CNN_LSTM.cnn_lstm(seq_len = seq_len, ini_len=args.ini_len, final_len=args.final_len).to(device)
+    t = CNN_LSTM.cnn_lstm(seq_len = seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
     if path.exists(args.param_file) :
         t.load_state_dict(torch.load(args.param_file))
 
 elif args.model=='trfrmr' :
     from Models import Transformer
-    t = Transformer.trnsfrmr_nt(seq_len = seq_len, ini_len=args.ini_len, final_len=args.final_len).to(device)
+    t = Transformer.trnsfrmr_nt(seq_len = seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
     if path.exists(args.param_file) :
         t.load_state_dict(torch.load(args.param_file))
 
@@ -110,7 +113,7 @@ for i in range(epochs) :
     train_rmse.append(sum(loss_list)/len(loss_list))
     loss_list=[]
     t.cpu()
-    test_rmse.append(Infer.evaluate(t, test_dataset=test_dataset))
+    test_rmse.append(Infer.evaluate(t, loss = args.loss, test_dataset=test_dataset, final_len=args.final_len, gamma_list = args.gamma_list))
     t.to(device)
     if test_rmse[-1]==min(test_rmse) :
         print('saving:- ', test_rmse[-1])

@@ -10,8 +10,14 @@ abs_loss_fn = nn.L1Loss() #.to(device)
 def mape_loss(pred,real) :
     return torch.sum(torch.div(abs_loss_fn(pred,real),torch.abs(real)))/b_sz
 
-
-
+def qr_loss(pred, tar) :
+    if gamma_list_len!=1 :
+        tar = torch.cat([tar]*gamma_list_len,dim=1)
+    n = tar.shape[0]
+    m = tar.shape[1]
+    loss = (1-gammas)*maximum(tar-pred)+(gammas)*maximum(pred-tar)
+    return loss.sum()/(n*m)
+    
 def run_to_eval(t, lossfn, give_lists=False, test_dataset=None, times_to_run_model=0) :
     loss_list = []
     i = 0
@@ -54,7 +60,7 @@ def mae_loss(x,y) :
 def diff(x,y) :
     return x-y
 
-def evaluate(t, loss = 'rmse', test_dataset=None) :
+def evaluate(t, loss = 'rmse', test_dataset=None, final_len=None,gamma_list=None) :
     t.eval()
     if loss == 'rmse' :
         lossfn = nn.MSELoss()#.to(device)
@@ -64,6 +70,13 @@ def evaluate(t, loss = 'rmse', test_dataset=None) :
         lossfn = abs_loss_fn
     elif loss == 'mbe' :
         lossfn = diff
+    elif loss == 'qr_loss' :
+        global maximum, gamma_list_len, gammas
+        maximum  = nn.ReLU()
+        gamma_list_len = len(gamma_list)
+        gammas = torch.tensor(gamma_list, dtype=torch.float64)
+        gammas = gammas.repeat_interleave(final_len)
+        lossfn = qr_loss
     else :
         lossfn = nn.MSELoss()
     return run_to_eval(t, lossfn, test_dataset=test_dataset)
@@ -99,6 +112,8 @@ if __name__=='main':
     parser.add_argument('--test_year', type=int, default=-1, help='test data year.')
     
     parser.add_argument('--times_to_run' , type=int, default=200, help='Times to run the model when mode is predict_list')
+    
+    parser.add_argument('--gamma_list', type=float, nargs='*', help='Gammas for calculating q-risk')
     args = parser.parse_args()
     
     from DataSet import Dataset 
@@ -132,7 +147,7 @@ if __name__=='main':
     t = t.double()
     
     if args.mode=='avg_loss' :
-        print(evaluate(t,args.loss,test_dataset))
+        print(evaluate(t,args.loss,test_dataset, args.final_len, args.gamma_list))
     
     elif args.mode=='predict_list' :
         print(run_to_eval(t, args.loss, True, test_dataset, args.times_to_run))
