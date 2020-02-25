@@ -42,7 +42,7 @@ def run_to_eval(t, lossfn, give_lists=False, test_dataset=None, times_to_run_mod
             actual_lis.append(batch['out'].tolist())
             time_lis.append(in_batch[0][-1][0:5].int().tolist())
         
-        loss = lossfn(out,batch['out'])
+        loss = lossfn(out,batch['out'].to(device))
         tot_loss += loss.item()
         i+=1
         if i>times_to_run_model and give_lists :

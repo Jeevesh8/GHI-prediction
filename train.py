@@ -99,7 +99,7 @@ t = t.double()
 train_rmse = []
 test_rmse = [10000]
 
-for i in range(epochs) :
+for ij in range(epochs) :
     loss_list = []
     for i, batch in enumerate(train_data_loader) :
         optimizer.zero_grad()
@@ -109,7 +109,7 @@ for i in range(epochs) :
         loss_list.append(loss)
         loss.backward()
         optimizer.step()
-    print('Avg. Training Loss in '+str(i)+ 'th epoch :- ', sum(loss_list)/len(loss_list))
+    print('Avg. Training Loss in '+str(ij)+ 'th epoch :- ', sum(loss_list)/len(loss_list))
     train_rmse.append(sum(loss_list)/len(loss_list))
     loss_list=[]
     test_rmse.append(Infer.evaluate(t, loss = args.loss, test_dataset=test_dataset, final_len=args.final_len, gamma_list = args.gamma_list, batch_size=args.batch_size))
