@@ -34,7 +34,7 @@ def run_to_eval(t, lossfn, give_lists=False, test_dataset=None, times_to_run_mod
     
     for batch in it :
         
-        in_batch = batch['in'] #.to(device)
+        in_batch = batch['in'].to(device)
         out = t(in_batch)
             
         if give_lists :
