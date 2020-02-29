@@ -81,8 +81,8 @@ The following command will allow you to shift back GHI-values(to counteract the 
 
 1.) Provide dates and predictions, actual values of model(interval predictions should also be sent) 
 ```
-python shift_ghi.py --ghi val1, val2, val3, val4 
-                    --date_lis date_1_year, date_1_month.. date1_minute, date_2_year, date_2_month...date_4_minute
+python shift_ghi.py --ghi val1 val2 val3 val4 
+                    --date_lis date_1_year date_1_month.. date1_minute date_2_year date_2_month...date_4_minute
 ```
 2.) Provide a pickle file storing a dictionary with one key as 'times_lis' and other keys corresponding to predictions of intervals, actual values in ```Data<Year>.csv``` files, etc. All the lists in dic[key] and times_lis can be nested, but must contain as many values as the number of dates in times_lis.
 
