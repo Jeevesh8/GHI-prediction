@@ -3,20 +3,50 @@ import torch
 import argparse
 from torch.utils.data import DataLoader
 import multiprocessing as mp
+from os import path
 
 n_wrkrs = mp.cpu_count()
-abs_loss_fn = nn.L1Loss() #.to(device)
+abs_loss_fn = nn.L1Loss()
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+def define_variables() :
+    global mask_gammas, maximum, gamma_list_len, gammas, real_vals_sum, pred_loss_sum
+        
+    maximum  = nn.ReLU()
+    gamma_list_len = len(args.gamma_list)
+    if args.mask_gamma_list is not None :
+        mask_gammas = torch.tensor(args.mask_gamma_list, device=device, dtype=torch.float64)
+        print(mask_gammas)
+    else :
+        mask_gammas = torch.ones(args.final_len)
+    
+    mask_gammas = mask_gammas.repeat_interleave(args.final_len)
+    gammas = torch.tensor(args.gamma_list, dtype=torch.float64, device=device)
+    gammas = gammas.repeat_interleave(args.final_len)
+        
+    real_vals_sum = 0 #For q-risk
+    pred_loss_sum = 0 #For q-risk
+        
 
 def mape_loss(pred,real) :
     return torch.sum(torch.div(abs_loss_fn(pred,real),torch.abs(real)))/b_sz
 
 def qr_loss(pred, tar) :
+    
+    global real_vals_sum, pred_loss_sum
+    
     if gamma_list_len!=1 :
         tar = torch.cat([tar]*gamma_list_len,dim=1)
+        tar = mask_gammas*tar
+        real_vals_sum += torch.abs(tar).sum().item()
+    
     n = tar.shape[0]
-    m = tar.shape[1]
+    m = tar.shape[1] #/gamma_list_len
+    
     loss = (1-gammas)*maximum(tar-pred)+(gammas)*maximum(pred-tar)
+    loss = mask_gammas*loss
+    
+    pred_loss_sum += loss.sum().item()
     return loss.sum()/(n*m)
     
 def run_to_eval(t, lossfn, give_lists=False, test_dataset=None, times_to_run_model=0, batch_size=1) :
@@ -72,11 +102,7 @@ def evaluate(t, loss = 'rmse', test_dataset=None, final_len=None, gamma_list=Non
     elif loss == 'mbe' :
         lossfn = diff
     elif loss == 'qr_loss' :
-        global maximum, gamma_list_len, gammas
-        maximum  = nn.ReLU()
-        gamma_list_len = len(gamma_list)
-        gammas = torch.tensor(gamma_list, dtype=torch.float64, device=device)
-        gammas = gammas.repeat_interleave(final_len)
+        define_variables()
         lossfn = qr_loss
     else :
         lossfn = nn.MSELoss()
@@ -91,17 +117,15 @@ def predict_next(t, date_lis, test_dataset) :
         print('Real output :-', batch[out].tolist())
     print('Predicted Output :-', out)
 
-if __name__=='main':
+if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', default='avg_loss', help='Choose from avg_loss, predict_list, predict_at_date')
-    parser.add_argument('--loss', default='rmse', help='Choose from rmse, mbe, mae, mape')
+    parser.add_argument('--loss', default='rmse', help='Choose from rmse, mbe, mae, mape, qr_loss')
     parser.add_argument('--model', default='ar_net', help='Choose from ar_net, trfrmr, cnn_lstm')
     parser.add_argument('--ini_len', type=int, help='Number of columns of input data')
     parser.add_argument('--param_file',help='Path to model\'s param file')
-    parser.add_Argument('--batch_size', type=int, default=1, help='To be used in avg_loss mode only.')
+    parser.add_argument('--batch_size', type=int, default=1, help='To be used in avg_loss mode only.')
 
-    parser.add_argument('--interval', type=bool, default=False, help='set true if model predicts interval')
-    
     parser.add_argument('--date_lis', nargs='*', help='List of form [Year, Month, Day, Hour, Minute]')
     
     parser.add_argument('--steps', type=int, default=1, help='Number of steps-ahead model was trained to predict')
@@ -116,6 +140,8 @@ if __name__=='main':
     parser.add_argument('--times_to_run' , type=int, default=200, help='Times to run the model when mode is predict_list')
     
     parser.add_argument('--gamma_list', type=float, nargs='*', help='Gammas for calculating q-risk')
+    parser.add_argument('--mask_gamma_list', type=int, nargs='*', help='Masks for Gamma values, e.g. use :- to calculate only p50 or p90 risk')
+    
     args = parser.parse_args()
     
     from DataSet import Dataset 
@@ -124,25 +150,26 @@ if __name__=='main':
     else :
         csv_paths = [args.root_dir+'/Data'+str(i)+'.csv' for i in range(args.test_start_year, args.test_final_year+1)]
     
-    dataset_final_len = args.final_len if not args.interval or args.final_len<=1 else int(args.final_len/2) 
+    model_final_len = args.final_len*len(args.gamma_list) if args.gamma_list!=None else args.final_len
+    dataset_final_len = args.final_len #if not args.interval or args.final_len<=1 else int(args.final_len/2) 
     test_dataset = Dataset.SRdata(csv_paths, seq_len = args.seq_len, steps = args.steps, final_len=dataset_final_len)
 
     
     if args.model=='ar_net' :
         from Models import AR_Net
-        t = AR_Net.ar_nt(seq_len = args.seq_len, ini_len=args.ini_len, final_len=args.final_len).to(device)
+        t = AR_Net.ar_nt(seq_len = args.seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
         if path.exists(args.param_file) :
             t.load_state_dict(torch.load(args.param_file))
     
     elif args.model=='cnn_lstm' :
         from Models import CNN_LSTM
-        t = CNN_LSTM.cnn_lstm(seq_len = args.seq_len, ini_len=args.ini_len, final_len=args.final_len).to(device)
+        t = CNN_LSTM.cnn_lstm(seq_len = args.seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
         if path.exists(args.param_file) :
             t.load_state_dict(torch.load(args.param_file))
     
     elif args.model=='trfrmr' :
         from Models import Transformer
-        t = Transformer.trnsfrmr_nt(seq_len = args.seq_len, ini_len=args.ini_len, final_len=args.final_len).to(device)
+        t = Transformer.trnsfrmr_nt(seq_len = args.seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
         if path.exists(args.param_file) :
             t.load_state_dict(torch.load(args.param_file))
 
@@ -158,3 +185,7 @@ if __name__=='main':
         for i in range(len(date_lis)) :
             date_lis[i] = int(date_lis[i])
         print(predict_next(t,args.date_lis,test_dataset))
+
+    if args.loss=='qr_loss' :
+        print('Q-risk = ', 2*pred_loss_sum/real_vals_sum)
+
