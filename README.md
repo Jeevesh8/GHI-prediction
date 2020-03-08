@@ -28,9 +28,15 @@ python train.py --batch_size 256 --seq_len 256 --root_dir <directory-having-Data
 ```
 
 final_len denotes number of consecutive GHI predictions to be made by model in one forward pass.
-steps denotes (number of rows to skip after seq_len rows before predicting final_len values -1)
+
+final_len is equal to number of outputs of the model in case no interval is being predicted. If intervals are being predicted, the number of outputs of the model will automatically be changed to final_len* length(gamma_list).
+
+steps denotes (number of rows to skip after seq_len rows before predicting final_len values)
+
 param_file is used to give path name of file where model-parameters are to be stored/retrieved from.
+
 Choose loss as 'mse' to train model to predict values of GHI. For predicting confidence intervals choose 'qr_loss' .
+
 And provide gammas as :- 
 
 ```
@@ -43,7 +49,7 @@ Example :-
   --gamma_list 0.1 0.5 0.9 0.5
 ```
 
-You can also specify 1 element list if we want to train entire model to predict one value only.
+You can also specify 1 element list if you want to train entire model to predict one side of interval only.
 
 ## Inference
 The script Infer.py can be run in three ways :-
@@ -52,7 +58,7 @@ The script Infer.py can be run in three ways :-
 
 Example :-
 ```
-python Infer.py --mode avg_loss --loss <rmse|mae|mbe|mape> --model <ar_net|trfrmr|cnn_lstm> --ini_len <same-as-in-train.py> --param_file
+python Infer.py --mode avg_loss --loss <rmse|mae|mbe|mape|qr_loss> --model <ar_net|trfrmr|cnn_lstm> --ini_len <same-as-in-train.py> --param_file
                 <same-as-train.py> --steps <same-as-in-train.py> --final_len <same-as-in-train.py> --seq_len <same-as-in-train.py>
                 --root_dir <dir-of-test-files> --test_start_year <int> --test_final_year <int>
 ```
@@ -73,7 +79,7 @@ python Infer.py --mode predict_list --model <ar_net|trfrmr|cnn_lstm> --ini_len <
                 --test_year <year-having-test-date> --times_to_run <no-of-times-to-run-the-model>
 ```
 
-The last two modes can also be run for confidence interval predictions. In that case, we need to provide corresponding param_file. And also add ```--interval True``` in the command. It will give outputs in the form same as (A) if model predicts multiple intervals simultaneously. 
+The last two modes can also be run for confidence interval predictions. In that case, we need to provide corresponding param_file. It will give outputs in the form same as (A) if model predicts multiple intervals simultaneously. 
 
 ## Getting right values from shifted ones
 
@@ -88,4 +94,23 @@ python shift_ghi.py --ghi val1 val2 val3 val4
 
 ```
 python shift_ghi.py --ghi_time_file <pickle-file-path> --write_to <append|out-pickle-file-path>
+```
+
+## Example Commands :- 
+
+Training :-
+```
+python train.py --root_dir '/content/drive/My Drive/SolarDataIndia/SolarData(In)' \
+                --tr_start_year 0 --tr_final_year 12 --val_start_year 13 --val_final_year 14 \
+                --model trfrmr --ini_len 15 --final_len 12 --optimizer RAdam \
+                --param_file '/content/drive/My Drive/trfrmr_12_step_ahead.param' \
+                --loss qr_loss --gamma_list 0.95 0.9 0.5 0.05 0.1 0.5 --batch_size 128
+```
+
+Getting Q-Risk over test set:-
+```
+python Infer.py --model trfrmr --mask_gamma_list 1 1 1 0 0 0 --ini_len 15 --final_len 12 \ 
+                --loss qr_loss --param_file '/content/drive/My Drive/trfrmr_12_step_ahead.param' \
+                --root_dir '/content/drive/My Drive/SolarDataIndia/SolarData(In)' \
+                --test_start_year 13 --test_final_year 14 --gamma_list 0.95 0.9 0.5 0.05 0.1 0.5
 ```
