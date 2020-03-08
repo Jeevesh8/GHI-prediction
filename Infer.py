@@ -23,7 +23,7 @@ def define_variables(args_from_train=None) :
         mask_gammas = torch.tensor(args.mask_gamma_list, device=device, dtype=torch.float64)
         print(mask_gammas)
     else :
-        mask_gammas = torch.ones(gamma_list_len)
+        mask_gammas = torch.ones(gamma_list_len, device=device, dtype=torch.float64)
     
     mask_gammas = mask_gammas.repeat_interleave(args.final_len)
     gammas = torch.tensor(args.gamma_list, dtype=torch.float64, device=device)
