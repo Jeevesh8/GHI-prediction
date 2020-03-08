@@ -9,12 +9,17 @@ n_wrkrs = mp.cpu_count()
 abs_loss_fn = nn.L1Loss()
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-def define_variables() :
-    global mask_gammas, maximum, gamma_list_len, gammas, real_vals_sum, pred_loss_sum
-        
+def define_variables(args_from_train=None) :
+    
+    global mask_gammas, maximum, gamma_list_len, gammas, real_vals_sum, pred_loss_sum      
+    
+    if args_from_train is not None :
+        args=args_from_train
+    
     maximum  = nn.ReLU()
     gamma_list_len = len(args.gamma_list)
-    if args.mask_gamma_list is not None :
+    
+    if hasattr(args,'mask_gamma_list') and args.mask_gamma_list is not None :
         mask_gammas = torch.tensor(args.mask_gamma_list, device=device, dtype=torch.float64)
         print(mask_gammas)
     else :
@@ -91,7 +96,7 @@ def mae_loss(x,y) :
 def diff(x,y) :
     return x-y
 
-def evaluate(t, loss = 'rmse', test_dataset=None, final_len=None, gamma_list=None, batch_size=1) :
+def evaluate(t, loss = 'rmse', test_dataset=None, args_from_train=None) :
     t.eval()
     if loss == 'rmse' :
         lossfn = nn.MSELoss()
@@ -102,7 +107,7 @@ def evaluate(t, loss = 'rmse', test_dataset=None, final_len=None, gamma_list=Non
     elif loss == 'mbe' :
         lossfn = diff
     elif loss == 'qr_loss' :
-        define_variables()
+        define_variables(args_from_train)
         lossfn = qr_loss
     else :
         lossfn = nn.MSELoss()
