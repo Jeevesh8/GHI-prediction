@@ -31,9 +31,9 @@ class SRdata(Dataset) :
     
     def getitem_by_date(self,date) :
         '''date:- list of form [year, month, day, hour, minute]'''
-        index = self.in_df.index[self.in_df['Year']==date[0]&self.in_df['Month']==date[1]
-                    &self.in_df['Day']==date[2]&self.in_df['Hour']==date[3]
-                    &self.in_df['Minute']==date[4]]
+        index = self.in_df.index[(self.in_df['Year']==date[0])&(self.in_df['Month']==date[1]) \
+                    &(self.in_df['Day']==date[2])&(self.in_df['Hour']==date[3]) \
+                    &(self.in_df['Minute']==date[4])]
         index = index.tolist()[0]
         if index<=self.seq_len :
             print('Not Enough Information To Predict')
