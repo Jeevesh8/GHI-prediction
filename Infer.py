@@ -118,7 +118,7 @@ def predict_next(t, date_lis, test_dataset) :
     batch = test_dataset.getitem_by_date(date_lis)
     in_batch = batch['in']
     out = t(in_batch)
-    if 'out' in batch and not args.interval:
+    if 'out' in batch :
         print('Real output :-', batch[out].tolist())
     print('Predicted Output :-', out)
 
@@ -131,7 +131,7 @@ if __name__=='__main__':
     parser.add_argument('--param_file',help='Path to model\'s param file')
     parser.add_argument('--batch_size', type=int, default=1, help='To be used in avg_loss mode only.')
 
-    parser.add_argument('--date_lis', nargs='*', help='List of form [Year, Month, Day, Hour, Minute]')
+    parser.add_argument('--date_lis', nargs='*', type=int, help='List of form [Year, Month, Day, Hour, Minute]')
     
     parser.add_argument('--steps', type=int, default=1, help='Number of steps-ahead model was trained to predict')
     parser.add_argument('--final_len', type=int, default=1)
@@ -187,8 +187,6 @@ if __name__=='__main__':
         print(run_to_eval(t, args.loss, True, test_dataset, args.times_to_run))
     
     elif args.mode == 'predict_next' :
-        for i in range(len(date_lis)) :
-            date_lis[i] = int(date_lis[i])
         print(predict_next(t,args.date_lis,test_dataset))
 
     if args.loss=='qr_loss' :
