@@ -98,7 +98,7 @@ python shift_ghi.py --ghi_time_file <pickle-file-path> --write_to <append|out-pi
 
 ## Example Commands :- 
 
-Training :-
+1.) Training :-
 ```
 python train.py --root_dir '/content/drive/My Drive/SolarDataIndia/SolarData(In)' \
                 --tr_start_year 0 --tr_final_year 12 --val_start_year 13 --val_final_year 14 \
@@ -107,18 +107,29 @@ python train.py --root_dir '/content/drive/My Drive/SolarDataIndia/SolarData(In)
                 --loss qr_loss --gamma_list 0.95 0.9 0.5 0.05 0.1 0.5 --batch_size 128
 ```
 
-Getting Q-Risk over test set:-
+2.) Getting Q-Risk over test set:-
 ```
 python Infer.py --model trfrmr --mask_gamma_list 1 1 1 0 0 0 --ini_len 15 --final_len 12 \ 
                 --loss qr_loss --param_file '/content/drive/My Drive/trfrmr_12_step_ahead.param' \
                 --root_dir '/content/drive/My Drive/SolarDataIndia/SolarData(In)' \
                 --test_start_year 13 --test_final_year 14 --gamma_list 0.95 0.9 0.5 0.05 0.1 0.5
 ```
-Getting predictions for 12 March , 2014 at 8:30 a.m. to 12 steps ahead :-
+
+3.) Getting predictions for 12 March , 2014 at 8:30 a.m. to 12 steps ahead :-
 ```
-!python Infer.py --mode predict_next --model trfrmr --ini_len 15 --final_len 12\
+python Infer.py --mode predict_next --model trfrmr --ini_len 15 --final_len 12\
                  --param_file '/content/drive/My Drive/trfrmr_12_step_ahead.param'\
                  --root_dir '/content/drive/My Drive/SolarDataIndia/SolarData(In)' \
                  --test_year 14 --date_lis 2014 3 12 8 30 --gamma_list 0.95 0.9 0.5 0.05 0.1 0.5
 ```
 The first 12 values are corresponding to gamma value of 0.95 for all the twelve GHI values ahead. The next 12 values for gamma 0.9 and so on..
+
+
+4.) To repeat the above thing 10 times, each time beginning with 1 hour ahead
+
+```
+python Infer.py --mode predict_list --model trfrmr --ini_len 15 --final_len 12\
+                 --param_file '/content/drive/My Drive/trfrmr_12_step_ahead.param'\
+                 --root_dir '/content/drive/My Drive/SolarDataIndia/SolarData(In)' \
+                 --test_year 14 --times_to_run 10 --gamma_list 0.95 0.9 0.5 0.05 0.1 0.5
+```
