@@ -117,6 +117,8 @@ def evaluate(t, loss = 'rmse', test_dataset=None, args_from_train=None) :
 def predict_next(t, date_lis, test_dataset) :
     batch = test_dataset.getitem_by_date(date_lis)
     in_batch = batch['in'].to(device)
+    print(in_batch.shape)
+    in_batch = in_batch.unsqueez(dim=0)
     out = t(in_batch)
     if 'out' in batch :
         print('Real output :-', batch[out].tolist())
