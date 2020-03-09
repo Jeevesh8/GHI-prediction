@@ -119,7 +119,7 @@ def predict_next(t, date_lis, test_dataset) :
     in_batch = batch['in'].to(device).unsqueeze(dim=0)
     out = t(in_batch)
     if 'out' in batch :
-        print('Real output :-', batch[out].tolist())
+        print('Real output :-', batch['out'].tolist())
     print('Predicted Output :-', out)
 
 if __name__=='__main__':
