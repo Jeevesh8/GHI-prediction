@@ -184,6 +184,7 @@ if __name__=='__main__':
         print(evaluate(t,args.loss,test_dataset, args.final_len, args.gamma_list, args.batch_size))
     
     elif args.mode=='predict_list' :
+        lossfn = nn.MSELoss()
         print(run_to_eval(t, args.loss, True, test_dataset, args.times_to_run))
     
     elif args.mode == 'predict_next' :
