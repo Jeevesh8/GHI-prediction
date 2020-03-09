@@ -76,9 +76,9 @@ def run_to_eval(t, lossfn, give_lists=False, test_dataset=None, times_to_run_mod
             pred_lis.append(out.tolist())
             actual_lis.append(batch['out'].tolist())
             time_lis.append(in_batch[0][-1][0:5].int().tolist())
-        
-        loss = lossfn(out,batch['out'].to(device))
-        tot_loss += loss.item()
+        else :
+            loss = lossfn(out,batch['out'].to(device))
+            tot_loss += loss.item()
         i+=1
         if i>times_to_run_model and give_lists :
             print(pred_lis)
@@ -184,8 +184,7 @@ if __name__=='__main__':
         print(evaluate(t,args.loss,test_dataset, args.final_len, args.gamma_list, args.batch_size))
     
     elif args.mode=='predict_list' :
-        lossfn = nn.MSELoss()
-        print(run_to_eval(t, lossfn, True, test_dataset, args.times_to_run))
+        print(run_to_eval(t, None, True, test_dataset, args.times_to_run))
     
     elif args.mode == 'predict_next' :
         print(predict_next(t,args.date_lis,test_dataset))
