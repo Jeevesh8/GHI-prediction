@@ -133,3 +133,5 @@ python Infer.py --mode predict_list --model trfrmr --ini_len 15 --final_len 12\
                  --root_dir '/content/drive/My Drive/SolarDataIndia/SolarData(In)' \
                  --test_year 14 --times_to_run 10 --gamma_list 0.95 0.9 0.5 0.05 0.1 0.5
 ```
+
+**NOTE** :- Currently you can't predict GHI for more steps than you trained for as you'd need weather data of those steps and hence just using prediction for previous n steps to predict for n steps after those will not work. 
