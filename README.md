@@ -114,10 +114,11 @@ python Infer.py --model trfrmr --mask_gamma_list 1 1 1 0 0 0 --ini_len 15 --fina
                 --root_dir '/content/drive/My Drive/SolarDataIndia/SolarData(In)' \
                 --test_start_year 13 --test_final_year 14 --gamma_list 0.95 0.9 0.5 0.05 0.1 0.5
 ```
-Getting predictions for 12 March , 2014 at 8:30 a.m. :-
+Getting predictions for 12 March , 2014 at 8:30 a.m. to 12 steps ahead :-
 ```
 !python Infer.py --mode predict_next --model trfrmr --ini_len 15 --final_len 12\
                  --param_file '/content/drive/My Drive/trfrmr_12_step_ahead.param'\
                  --root_dir '/content/drive/My Drive/SolarDataIndia/SolarData(In)' \
                  --test_year 14 --date_lis 2014 3 12 8 30 --gamma_list 0.95 0.9 0.5 0.05 0.1 0.5
 ```
+The first 12 values are corresponding to gamma value of 0.95 for all the twelve GHI values ahead. The next 12 values for gamma 0.9 and so on..
