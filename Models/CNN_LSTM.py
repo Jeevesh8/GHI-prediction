@@ -2,12 +2,13 @@ import torch.nn as nn
 import torch
 
 class cnn_lstm(nn.Module) :
-    def __init__(self,seq_len=256, ini_len=18, final_len=1) :
+    def __init__(self,seq_len=256, ini_len=18, final_len=1, batch_size=256) :
         super().__init__()
         self.d_model = 20 
         self.seq_len = seq_len
         self.hidden_size = 32
         self.num_layers = 1
+        self.batch_size=batch_size
         self.init_trnsfrm = nn.Sequential(nn.Linear(ini_len,32),nn.ReLU(),nn.Linear(32,32),nn.ReLU(),nn.Linear(32,self.d_model))
         self.batch_norm = nn.BatchNorm1d(self.d_model)
         self.cnn = nn.Sequential(nn.Conv1d(self.d_model, 32,4,1),
@@ -19,7 +20,7 @@ class cnn_lstm(nn.Module) :
         self.final = nn.Sequential(nn.Linear(self.hidden_size*56,512),nn.ReLU(),nn.Linear(512,final_len))
     
     def forward(self,batch) :
-        h_n, c_n = torch.ones((self.num_layers,-1,self.hidden_size),dtype=torch.float64),torch.ones((self.num_layers,self.batch_size,self.hidden_size),dtype=torch.float64)
+        h_n, c_n = torch.ones((self.num_layers,self.batch_size,self.hidden_size),dtype=torch.float64),torch.ones((self.num_layers,self.batch_size,self.hidden_size),dtype=torch.float64)
         batch = self.cnn(self.batch_norm(self.init_trnsfrm(batch).transpose(1,2))).transpose(1,2)
         batch,(h_n,c_n) = self.lstm( batch , (h_n,c_n))
         del h_n,c_n
