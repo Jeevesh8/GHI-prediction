@@ -181,7 +181,7 @@ if __name__=='__main__':
     t = t.double()
     
     if args.mode=='avg_loss' :
-        print(evaluate(t,args.loss,test_dataset, args.final_len, args.gamma_list, args.batch_size))
+        print(evaluate(t,args.loss, test_dataset, args))
     
     elif args.mode=='predict_list' :
         print(run_to_eval(t, None, True, test_dataset, args.times_to_run))
