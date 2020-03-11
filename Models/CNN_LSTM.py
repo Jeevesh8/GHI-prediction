@@ -4,7 +4,7 @@ import torch
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 class cnn_lstm(nn.Module) :
-    def __init__(self,seq_len=256, ini_len=18, final_len=1, batch_size=256) :
+    def __init__(self,seq_len=128, ini_len=18, final_len=1, batch_size=256) :
         super().__init__()
         self.d_model = 20 
         self.seq_len = seq_len
