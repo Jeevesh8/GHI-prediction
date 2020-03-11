@@ -168,7 +168,7 @@ if __name__=='__main__':
     
     elif args.model=='cnn_lstm' :
         from Models import CNN_LSTM
-        t = CNN_LSTM.cnn_lstm(seq_len = args.seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
+        t = CNN_LSTM.cnn_lstm(seq_len = args.seq_len, ini_len=args.ini_len, final_len=model_final_len, batch_Size=args.batch_size).to(device)
         if path.exists(args.param_file) :
             t.load_state_dict(torch.load(args.param_file))
     
