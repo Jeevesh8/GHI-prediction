@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch
 
 class cnn_lstm(nn.Module) :
     def __init__(self,seq_len=256, ini_len=18, final_len=1) :
