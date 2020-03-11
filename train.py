@@ -79,7 +79,7 @@ if args.model=='ar_net' :
 
 elif args.model=='cnn_lstm' :
     from Models import CNN_LSTM
-    t = CNN_LSTM.cnn_lstm(seq_len = seq_len, ini_len=args.ini_len, final_len=model_final_len, batch_size=args.batch_size).to(device)
+    t = CNN_LSTM.cnn_lstm(seq_len = 128, ini_len=args.ini_len, final_len=model_final_len, batch_size=args.batch_size).to(device)
     if path.exists(args.param_file) :
         t.load_state_dict(torch.load(args.param_file))
 
