@@ -75,6 +75,7 @@ if __name__ == '__main__' :
                 
     else :
         dates = []
+        i=0
         while i+5<=len(args.date_lis) :
             dates.append(args.date_lis[i:i+5])
             i+=5
