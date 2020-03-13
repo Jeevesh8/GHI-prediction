@@ -126,7 +126,7 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', default='avg_loss', help='Choose from avg_loss, predict_list, predict_at_date')
     parser.add_argument('--loss', default='rmse', help='Choose from rmse, mbe, mae, mape, qr_loss')
-    parser.add_argument('--model', default='ar_net', help='Choose from ar_net, trfrmr, cnn_lstm')
+    parser.add_argument('--model', default='ar_net', help='Choose from ar_net, trfrmr, cnn_lstm, lstm')
     parser.add_argument('--ini_len', type=int, help='Number of columns of input data')
     parser.add_argument('--param_file',help='Path to model\'s param file')
     parser.add_argument('--batch_size', type=int, default=1, help='To be used in avg_loss mode only.')
@@ -163,20 +163,21 @@ if __name__=='__main__':
     if args.model=='ar_net' :
         from Models import AR_Net
         t = AR_Net.ar_nt(seq_len = args.seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
-        if path.exists(args.param_file) :
-            t.load_state_dict(torch.load(args.param_file))
-    
+        
     elif args.model=='cnn_lstm' :
         from Models import CNN_LSTM
         t = CNN_LSTM.cnn_lstm(seq_len = args.seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
-        if path.exists(args.param_file) :
-            t.load_state_dict(torch.load(args.param_file))
-    
+        
     elif args.model=='trfrmr' :
         from Models import Transformer
         t = Transformer.trnsfrmr_nt(seq_len = args.seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
-        if path.exists(args.param_file) :
-            t.load_state_dict(torch.load(args.param_file))
+    
+    elif args.model=='LSTM' :
+        from Models import LSTM
+        t = LSTM.lstm(seq_len = args.seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
+    
+    if path.exists(args.param_file) :
+        t.load_state_dict(torch.load(args.param_file))
 
     t = t.double()
     
