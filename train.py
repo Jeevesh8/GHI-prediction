@@ -23,7 +23,7 @@ parser.add_argument('--epochs', type=int, default=10)
 parser.add_argument('--loss', default='mse', help='Choose from qr_loss,mse')
 parser.add_argument('--gamma_list', nargs='*', type=float, help='All gammas to be predicted by 1 model')
 parser.add_argument('--lr', type=float, default=0.001)
-parser.add_argument('--model', default='ar_net', help='Choose From ar_net, trfrmr, cnn_lstm')
+parser.add_argument('--model', default='ar_net', help='Choose From ar_net, trfrmr, cnn_lstm, lstm')
 parser.add_argument('--ini_len', type=int, default=18, help='Number of Columns in Data<i>.csv')
 parser.add_argument('--final_len', type=int, default=1, help='Number of numbers your model will predict.')
 parser.add_argument('--steps', type=int, default=1, help='How many step ahead do you want to predict?')
@@ -74,20 +74,21 @@ elif args.loss=='qr_loss' :
 if args.model=='ar_net' :
     from Models import AR_Net
     t = AR_Net.ar_nt(seq_len = seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
-    if path.exists(args.param_file) :
-        t.load_state_dict(torch.load(args.param_file))
-
+    
 elif args.model=='cnn_lstm' :
     from Models import CNN_LSTM
     t = CNN_LSTM.cnn_lstm(seq_len = seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
-    if path.exists(args.param_file) :
-        t.load_state_dict(torch.load(args.param_file))
 
 elif args.model=='trfrmr' :
     from Models import Transformer
     t = Transformer.trnsfrmr_nt(seq_len = seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
-    if path.exists(args.param_file) :
-        t.load_state_dict(torch.load(args.param_file))
+
+elif args.model=='lstm' :
+    from Models import LSTM
+    t = LSTM.lstm(seq_len = seq_len, ini_len=args.ini_len, final_len=model_final_len).to(device)
+
+if path.exists(args.param_file) :
+    t.load_state_dict(torch.load(args.param_file))
 
 if args.optimizer == 'RAdam' :
     from optimizers import RAdam
