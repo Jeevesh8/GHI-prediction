@@ -103,6 +103,7 @@ def evaluate(t, loss = 'rmse', test_dataset=None, args_from_train=None) :
     t.eval()
     define_variables(args_from_train)
     lossfn = interval_loss
+    global lossfn_i
     if loss == 'rmse' :
         lossfn_i = nn.MSELoss()
     elif loss == 'mape' :
