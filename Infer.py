@@ -115,7 +115,7 @@ def evaluate(t, loss = 'rmse', test_dataset=None, args_from_train=None) :
     elif loss == 'qr_loss' :
         lossfn_i = 'qr_loss'
     else :
-        lossfn_i = nn.MSELoss()
+        lossfn_i = nn.MSELoss(reduction='none')
     return run_to_eval(t, lossfn, test_dataset=test_dataset)
 
 
