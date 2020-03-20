@@ -36,20 +36,23 @@ def define_variables(args_from_train=None) :
 def mape_loss(pred,real) :
     return torch.sum(torch.div(abs_loss_fn(pred,real),torch.abs(real)))/b_sz
 
-def qr_loss(pred, tar) :
+def interval_loss(pred, tar) :
     
     global real_vals_sum, pred_loss_sum
     
     if gamma_list_len!=1 :
         tar = torch.cat([tar]*gamma_list_len,dim=1)
         tar = mask_gammas*tar
+        pred = mask_gammas*pred
         real_vals_sum += torch.abs(tar).sum().item()
     
     n = tar.shape[0]
-    m = tar.shape[1] #/gamma_list_len
+    m = mask_gammas.sum() #tar.shape[1] #/gamma_list_len
     
-    loss = (1-gammas)*maximum(tar-pred)+(gammas)*maximum(pred-tar)
-    loss = mask_gammas*loss
+    if lossfn_i == 'qr_loss' :
+        loss = (1-gammas)*maximum(tar-pred)+(gammas)*maximum(pred-tar)
+    else :
+        loss = lossfn_i(tar, pred)
     
     pred_loss_sum += loss.sum().item()
     return loss.sum()/(n*m)
@@ -98,19 +101,20 @@ def diff(x,y) :
 
 def evaluate(t, loss = 'rmse', test_dataset=None, args_from_train=None) :
     t.eval()
+    define_variables(args_from_train)
+    lossfn = interval_loss
     if loss == 'rmse' :
-        lossfn = nn.MSELoss()
+        lossfn_i = nn.MSELoss()
     elif loss == 'mape' :
-        lossfn = mape_loss
+        lossfn_i = mape_loss
     elif loss == 'mae' :
-        lossfn = abs_loss_fn
+        lossfn_i = abs_loss_fn
     elif loss == 'mbe' :
-        lossfn = diff
+        lossfn_i = diff
     elif loss == 'qr_loss' :
-        define_variables(args_from_train)
-        lossfn = qr_loss
+        lossfn_i = 'qr_loss'
     else :
-        lossfn = nn.MSELoss()
+        lossfn_i = nn.MSELoss()
     return run_to_eval(t, lossfn, test_dataset=test_dataset)
 
 
