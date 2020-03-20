@@ -17,7 +17,7 @@ def define_variables(args_from_train=None) :
         args=args_from_train
     
     maximum  = nn.ReLU()
-    gamma_list_len = len(args.gamma_list)
+    gamma_list_len = max(1,len(args.gamma_list))
     
     if hasattr(args,'mask_gamma_list') and args.mask_gamma_list is not None :
         mask_gammas = torch.tensor(args.mask_gamma_list, device=device, dtype=torch.float64)
