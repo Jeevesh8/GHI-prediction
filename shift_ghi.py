@@ -3,7 +3,7 @@ import pandas as pd
 import argparse
 
 def reform(lis, level=0) :
-    if type(lis)!=list or (level==1 and type(lis[0])!=list) :
+    if type(lis[0])!=list or (level==1 and type(lis[0][0])!=list) :
         return lis
     new_lis = []
     for elem in lis :
@@ -53,7 +53,7 @@ if __name__ == '__main__' :
     parser.add_argument('--ghi_time_file', help='path to file having lists of ghi and times')
     parser.add_argument('--date_lis', nargs='*', type=int)
     parser.add_argument('--ghi',nargs='*',type=float)
-    parser.add_argument('--write_to',help='Choose from <append|new_file_path>' )
+    parser.add_argument('--write_to',help='Choose from <append|new_file_path|print>' )
     args = parser.parse_args()
     
     if args.ghi_time_file is not None :
@@ -69,6 +69,8 @@ if __name__ == '__main__' :
         if args.write_to == 'append' :
             with open(args.ghi_time_file, 'ab') as f :
                 pickle.dump(dic,f)
+        elif args.write_to == 'print' :
+            print(dic)
         else :
             with open(args.ghi_time_file, 'wb+') as f:
                 pickle.dump(dic,f)
