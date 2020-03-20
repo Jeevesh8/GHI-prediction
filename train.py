@@ -97,8 +97,8 @@ elif args.optimizer == 'Adam' :
     optimizer = torch.optim.Adam(t.parameters(),lr=args.lr)
 
 t = t.double()
-train_rmse = []
-test_rmse = [10000]
+train_mse = []
+test_mse = [10000]
 
 for ij in range(epochs) :
     loss_list = []
@@ -111,10 +111,10 @@ for ij in range(epochs) :
         loss.backward()
         optimizer.step()
     print('Avg. Training Loss in '+str(ij)+ 'th epoch :- ', sum(loss_list)/len(loss_list))
-    train_rmse.append(sum(loss_list)/len(loss_list))
+    train_mse.append(sum(loss_list)/len(loss_list))
     loss_list=[]
-    test_rmse.append(Infer.evaluate(t, loss = args.loss, test_dataset=test_dataset, args_from_train=args))
-    if test_rmse[-1]==min(test_rmse) :
-        print('saving:- ', test_rmse[-1])
+    test_mse.append(Infer.evaluate(t, loss = args.loss, test_dataset=test_dataset, args_from_train=args))
+    if test_mse[-1]==min(test_mse) :
+        print('saving:- ', test_mse[-1])
         torch.save(t.state_dict(),args.param_file)
     

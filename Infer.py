@@ -99,12 +99,12 @@ def mae_loss(x,y) :
 def diff(x,y) :
     return x-y
 
-def evaluate(t, loss = 'rmse', test_dataset=None, args_from_train=None) :
+def evaluate(t, loss = 'mse', test_dataset=None, args_from_train=None) :
     t.eval()
     define_variables(args_from_train)
     lossfn = interval_loss
     global lossfn_i
-    if loss == 'rmse' :
+    if loss == 'mse' :
         lossfn_i = nn.MSELoss(reduction='none')
     elif loss == 'mape' :
         lossfn_i = mape_loss
@@ -130,7 +130,7 @@ def predict_next(t, date_lis, test_dataset) :
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', default='avg_loss', help='Choose from avg_loss, predict_list, predict_at_date')
-    parser.add_argument('--loss', default='rmse', help='Choose from rmse, mbe, mae, mape, qr_loss')
+    parser.add_argument('--loss', default='mse', help='Choose from mse, mbe, mae, mape, qr_loss')
     parser.add_argument('--model', default='ar_net', help='Choose from ar_net, trfrmr, cnn_lstm, lstm')
     parser.add_argument('--ini_len', type=int, help='Number of columns of input data')
     parser.add_argument('--param_file',help='Path to model\'s param file')
