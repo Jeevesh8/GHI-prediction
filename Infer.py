@@ -6,7 +6,7 @@ import multiprocessing as mp
 from os import path
 
 n_wrkrs = mp.cpu_count()
-abs_loss_fn = nn.L1Loss()
+abs_loss_fn = nn.L1Loss(reduction='none')
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 def define_variables(args_from_train=None) :
@@ -34,7 +34,7 @@ def define_variables(args_from_train=None) :
         
 
 def mape_loss(pred,real) :
-    return torch.sum(torch.div(abs_loss_fn(pred,real),torch.abs(real)))/b_sz
+    return torch.div(abs_loss_fn(pred,real),torch.abs(real))
 
 def interval_loss(pred, tar) :
     
@@ -105,7 +105,7 @@ def evaluate(t, loss = 'rmse', test_dataset=None, args_from_train=None) :
     lossfn = interval_loss
     global lossfn_i
     if loss == 'rmse' :
-        lossfn_i = nn.MSELoss()
+        lossfn_i = nn.MSELoss(reduction='none')
     elif loss == 'mape' :
         lossfn_i = mape_loss
     elif loss == 'mae' :
