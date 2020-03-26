@@ -38,6 +38,6 @@ class SRdata(Dataset) :
         if index<=self.seq_len :
             print('Not Enough Information To Predict')
             exit(0)
-        if index>=self.__len__() :
-            return self.__getonlyin__()
+        if index-self.seq_len>=self.__len__() :
+            return self.__getonlyin__(index)
         return self.__getitem__(index-self.seq_len) 
