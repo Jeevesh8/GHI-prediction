@@ -62,6 +62,9 @@ python Infer.py --mode avg_loss --loss <mse|mae|mbe|mape|qr_loss> --model <ar_ne
                 <same-as-train.py> --steps <same-as-in-train.py> --final_len <same-as-in-train.py> --seq_len <same-as-in-train.py>
                 --root_dir <dir-of-test-files> --test_start_year <int> --test_final_year <int>
 ```
+
+Also, you must specify ```--gamma_list``` if it was used during training. Optionally, you can also specify ```--mask_gamma_list``` to calculate q_risk over few intervals only. For example usage of this see "Example commands(2)" below.
+
 2.) To get prediction at a particular time.
 
 Example :-
@@ -114,6 +117,7 @@ python Infer.py --model trfrmr --mask_gamma_list 1 1 1 0 0 0 --ini_len 15 --fina
                 --root_dir '/content/drive/My Drive/SolarDataIndia/SolarData(In)' \
                 --test_start_year 13 --test_final_year 14 --gamma_list 0.95 0.9 0.5 0.05 0.1 0.5
 ```
+Q-Risk is calculated over upper limits of intervals only due to mask_gamma_list. 
 
 3.) Getting predictions for 12 March , 2014 at 8:30 a.m. to 12 steps ahead :-
 ```
