@@ -98,6 +98,18 @@ python shift_ghi.py --ghi val1 val2 val3 val4
 ```
 python shift_ghi.py --ghi_time_file <pickle-file-path> --write_to <append|out-pickle-file-path>
 ```
+## Using smart_persistence.py (Baseline Model)
+
+1.) Provides smart persistence[Pedro and Coimbra, 2012] (https://www.sciencedirect.com/science/article/abs/pii/S0038092X12001429) predictions and accuracy metrics.
+
+```
+python smart_persistence.py --loss <mse|mae|mbe|mape> --tr_start_year <training-start-year>
+                            --tr_final_year <training-final-year> --test_start_year <year>
+                            --test_final_year <year> --root_dir <directory-having-data-files>
+                            --steps <steps-b/w-consecutive-preds-for-test-data> --get_preds
+```
+
+Omitting the ```--get_preds``` flag will cause only the loss to print.
 
 ## Example Commands :- 
 
@@ -138,4 +150,6 @@ python Infer.py --mode predict_list --model trfrmr --ini_len 15 --final_len 12\
                  --test_year 14 --times_to_run 10 --gamma_list 0.95 0.9 0.5 0.05 0.1 0.5
 ```
 
-**NOTE** :- Currently you can't predict GHI for more steps than you trained for as you'd need weather data of those steps and hence just using prediction for previous n steps to predict for n steps after those will not work. 
+**NOTE** :- Currently you can't predict GHI for more future steps(parallely) than you trained for as you'd need weather data of those steps and hence just using prediction for previous n steps to predict for n steps after those will not work. 
+
+All the years, i.e., ```--tr_start_year, --val_final_year``` etc. are integers from 0 to n-1 where n is the number of years(or files) in your root directory. Each file must correspond to single year.
