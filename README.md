@@ -100,7 +100,7 @@ python shift_ghi.py --ghi_time_file <pickle-file-path> --write_to <append|out-pi
 ```
 ## Using smart_persistence.py (Baseline Model)
 
-1.) Provides smart persistence[Pedro and Coimbra, 2012] (https://www.sciencedirect.com/science/article/abs/pii/S0038092X12001429) predictions and accuracy metrics.
+1.) Provides smart persistence [Pedro and Coimbra, 2012](https://www.sciencedirect.com/science/article/abs/pii/S0038092X12001429) predictions and accuracy metrics.
 
 ```
 python smart_persistence.py --loss <mse|mae|mbe|mape> --tr_start_year <training-start-year>
