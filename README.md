@@ -1,6 +1,20 @@
 # GHI-prediction
 
+[![DOI](https://zenodo.org/badge/239165840.svg)](https://zenodo.org/badge/latestdoi/239165840)
+
 This repository implements some time-series prediction models (CNN-LSTM, Transformer, AR-Net, LSTM) for predicting GHI-values in various ways.
+
+If you find the repository useful, please consider citing it using the following BibTeX 
+```
+@misc{https://doi.org/10.5281/zenodo.3837211,
+  doi = {10.5281/ZENODO.3837211},
+  url = {https://zenodo.org/record/3837211},
+  author = {{Jeevesh8}},
+  title = {Jeevesh8/GHI-prediction: First Release},
+  publisher = {Zenodo},
+  year = {2020}
+}
+```
 
 ## Dataset
 
